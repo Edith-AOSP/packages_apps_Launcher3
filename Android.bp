@@ -168,6 +168,15 @@ filegroup {
     ],
 }
 
+// Snowboard source
+filegroup {
+    name: "launcher-src_snowboard",
+    srcs: [
+        "src_snowboard/**/*.java",
+        "src_snowboard/**/*.kt",
+    ],
+}
+
 sh_binary_host {
     name: "launcher-build-config-tool",
     src: "tools/buildconfig.sh",
@@ -330,9 +339,15 @@ android_library {
         // Compose dependencies
         "androidx.compose.runtime_runtime",
         "androidx.compose.material3_material3",
+        "androidx.compose.material_material-icons-extended",
+        "androidx.compose.foundation_foundation",
+        "androidx.compose.foundation_foundation-layout",
+        "androidx.compose.ui_ui",
+        "androidx.activity_activity-compose",
         "androidx.compose.ui_ui-tooling-preview",
         "androidx.compose.ui_ui-tooling",
         "androidx.navigation_navigation-compose",
+        "PlatformComposeCore",
         "cuebarlib",
     ],
     manifest: "AndroidManifest-common.xml",
@@ -373,6 +388,7 @@ android_app {
     ],
     srcs: [
         ":launcher-src",
+        ":launcher-src_snowboard",
         ":launcher-src_no_quickstep",
         ":launcher-build-config",
     ],
@@ -442,6 +458,10 @@ android_library {
         "androidx.compose.runtime_runtime",
         "androidx.compose.material3_material3",
         "androidx.compose.material_material-icons-extended",
+        "androidx.compose.foundation_foundation",
+        "androidx.compose.foundation_foundation-layout",
+        "androidx.compose.ui_ui",
+        "androidx.activity_activity-compose",
         "androidx.compose.ui_ui-tooling-preview",
         "androidx.compose.ui_ui-tooling",
         "PlatformComposeCore",
@@ -473,6 +493,7 @@ android_library {
     name: "Launcher3GoLib",
     srcs: [
         ":launcher-src",
+        ":launcher-src_snowboard",
         ":launcher-quickstep-src",
         ":launcher-quickstep-dagger",
         ":launcher-go-build-config",
@@ -517,6 +538,7 @@ android_library {
     name: "Launcher3QuickStepLib",
     srcs: [
         ":launcher-src",
+        ":launcher-src_snowboard",
         ":launcher-quickstep-src",
         ":launcher-quickstep-dagger",
         ":launcher-build-config",
@@ -532,12 +554,13 @@ android_library {
     static_libs: [
         "SystemUI-statsd",
         "QuickstepResLib",
+        "androidx.room_room-runtime",
         // Compose dep
         "androidx.compose.runtime_runtime",
     ],
     manifest: "quickstep/AndroidManifest.xml",
     platform_apis: true,
-    plugins: ["dagger2-compiler"],
+    plugins: ["dagger2-compiler", "androidx.room_room-compiler-plugin"],
     min_sdk_version: "current",
     // TODO(b/319712088): re-enable use_resource_processor
     use_resource_processor: false,

@@ -708,4 +708,10 @@
     <string name="folder_creator_add" translatable="false">Add</string>
     <string name="folder_creator_cancel" translatable="false">Cancel</string>
 
+    <!-- Icon Pack -->
+    <string name="system_icons">System Icons</string>
+    <string name="icon_picker_default_category">Icons</string>
+    <string name="customize_shortcut_label">Customize</string>
+    <string name="customize_app_label_hint">Label</string>
+    <string name="restore_default_icon">Restore to default</string>
 </resources>

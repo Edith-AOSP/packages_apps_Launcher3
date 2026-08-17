@@ -43,6 +43,7 @@ public class LauncherFiles {
 
     public static final String WIDGET_PREVIEWS_DB = "widgetpreviews.db";
     public static final String APP_ICONS_DB = "app_icons.db";
+    public static final String SNOWBOARD_PREFS_DB = "snowboard_prefs";
 
     public static final List<String> GRID_DB_FILES = Collections.unmodifiableList(Arrays.asList(
             LAUNCHER_DB,
@@ -70,7 +71,8 @@ public class LauncherFiles {
             WIDGET_PREVIEWS_DB,
             MANAGED_USER_PREFERENCES_KEY + XML,
             DEVICE_PREFERENCES_KEY + XML,
-            APP_ICONS_DB));
+            APP_ICONS_DB,
+            SNOWBOARD_PREFS_DB));
 
     private static List<String> createAllFiles() {
         ArrayList<String> result = new ArrayList<>();
