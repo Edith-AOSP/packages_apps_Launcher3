@@ -31,6 +31,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Bitmap;
@@ -48,8 +49,10 @@ import androidx.annotation.Nullable;
 
 import com.android.launcher3.InvariantDeviceProfile;
 import com.android.launcher3.LauncherAppState;
+import com.android.launcher3.LauncherFiles;
 import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherPrefs;
+import com.android.launcher3.icons.LauncherIcons;
 import com.android.launcher3.dagger.ApplicationContext;
 import com.android.launcher3.dagger.LauncherAppSingleton;
 import com.android.launcher3.deviceprofile.parser.GridOption;
@@ -61,6 +64,7 @@ import com.android.launcher3.shapes.ShapesProvider;
 import com.android.launcher3.util.ApiWrapper;
 import com.android.launcher3.util.ContentProviderProxy.ProxyProvider;
 import com.android.launcher3.util.DaggerSingletonTracker;
+import com.android.launcher3.util.Executors;
 import com.android.launcher3.util.RunnableList;
 
 import java.lang.ref.WeakReference;
@@ -100,7 +104,7 @@ import javax.inject.Inject;
 @LauncherAppSingleton
 public class GridCustomizationsProxy implements ProxyProvider {
 
-    private static final String TAG = "GridCustomizationsProvider";
+    private static final String TAG = "GridCustomizationsProxy";
 
     // KEY_NAME is the name of the grid used internally while the KEY_GRID_TITLE is the translated
     // string title of the grid.
@@ -137,6 +141,11 @@ public class GridCustomizationsProxy implements ProxyProvider {
             "/set_workspace_items_label_hidden";
     public static final String WORKSPACE_ITEMS_LABEL_HIDDEN = "/workspace_items_label_hidden";
     public static final String BOOLEAN_VALUE = "boolean_value";
+
+    /** These methods are used to set icon pack */
+    public static final String GET_ICON_PACK = "/get_icon_pack";
+    public static final String ICON_PACK = "/icon_pack";
+    public static final String ICON_PACK_VALUE = "icon_pack_value";
 
     private static final String KEY_SURFACE_PACKAGE = "surface_package";
     private static final String KEY_CALLBACK = "callback";
@@ -264,6 +273,16 @@ public class GridCustomizationsProxy implements ProxyProvider {
                         mPrefs.get(LauncherPrefs.WORKSPACE_ITEMS_LABEL_HIDDEN);
                 cursor.newRow().add(BOOLEAN_VALUE, isWorkspaceItemsLabelHidden ? 1 : 0);
                 return cursor;
+            case GET_ICON_PACK:
+            case ICON_PACK: {
+                MatrixCursor iconPackCursor = new MatrixCursor(new String[]{ICON_PACK_VALUE});
+                SharedPreferences prefs = mContext.getSharedPreferences(
+                        LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+                String iconPack = prefs.getString("pref_iconPackPackage", "");
+                iconPackCursor.newRow().add(ICON_PACK_VALUE, iconPack != null ? iconPack : "");
+                Log.d(TAG, "query: path=" + path + ", iconPack=" + iconPack);
+                return iconPackCursor;
+            }
             default: {
                 Log.d(TAG, "query: path=" + path + " not found, returning null.");
                 return null;
@@ -332,6 +351,27 @@ public class GridCustomizationsProxy implements ProxyProvider {
                         LauncherPrefs.WORKSPACE_ITEMS_LABEL_HIDDEN,
                         values.getAsBoolean(BOOLEAN_VALUE)
                 );
+                return UPDATE_SETTING_SUCCESS;
+            }
+            case ICON_PACK: {
+                String iconPackPkg = values.getAsString(ICON_PACK_VALUE);
+                SharedPreferences prefs = mContext.getSharedPreferences(
+                        LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+                prefs.edit().putString("pref_iconPackPackage",
+                        iconPackPkg != null ? iconPackPkg : "").commit();
+                LauncherIcons.clearPool(mContext);
+                try {
+                    Executors.MODEL_EXECUTOR.submit(() -> {
+                        LauncherAppState state = LauncherAppState.getInstance(mContext);
+                        InvariantDeviceProfile idp = state.getInvariantDeviceProfile();
+                        state.getIconCache().updateIconParams(idp.fillResIconDpi,
+                                idp.iconBitmapSize);
+                        state.getModel().forceReload("icon-pack-changed");
+                    }).get();
+                } catch (ExecutionException | InterruptedException e) {
+                    Log.e(TAG, "Failed to reload after icon pack change", e);
+                    return UPDATE_SETTING_FAILURE;
+                }
                 return UPDATE_SETTING_SUCCESS;
             }
             default:

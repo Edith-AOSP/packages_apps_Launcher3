@@ -17,8 +17,10 @@
 package com.android.launcher3.graphics
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.Resources
 import androidx.annotation.AnyThread
+import com.android.launcher3.LauncherFiles
 import com.android.launcher3.LauncherPrefChangeListener
 import com.android.launcher3.LauncherPrefs
 import com.android.launcher3.LauncherPrefs.Companion.backedUpItem
@@ -97,6 +99,15 @@ constructor(
 
     private val listeners = CopyOnWriteArrayList<ThemeChangeListener>()
 
+    private val iconPackPrefs = context.getSharedPreferences(
+        LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE,
+    )
+    private val iconPackListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == "pref_iconPackPackage") {
+            listeners.forEach { it.onThemeChanged() }
+        }
+    }
+
     init {
         lifecycle.addCloseable(overlayChangeHandler.addCallback { verifyIconState() })
 
@@ -108,6 +119,12 @@ constructor(
         lifecycle.addCloseable {
             prefs.removeListener(prefListener, PREF_ICON_SHAPE)
             iconState.closeController()
+        }
+
+        // Listen for icon pack changes and trigger full icon reload
+        iconPackPrefs.registerOnSharedPreferenceChangeListener(iconPackListener)
+        lifecycle.addCloseable {
+            iconPackPrefs.unregisterOnSharedPreferenceChangeListener(iconPackListener)
         }
     }
 

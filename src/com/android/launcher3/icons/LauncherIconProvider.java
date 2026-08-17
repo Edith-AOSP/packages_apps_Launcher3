@@ -30,6 +30,8 @@ import com.android.launcher3.graphics.ThemeManager;
 
 import org.xmlpull.v1.XmlPullParser;
 
+import androidx.annotation.Nullable;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -104,5 +106,16 @@ public class LauncherIconProvider extends IconProvider {
         }
         mThemedIconMap = map;
         return mThemedIconMap;
+    }
+
+    /**
+     * Sets a preview-only icon pack override. When non-null, the icon provider should use
+     * this icon pack instead of reading from SharedPreferences. This allows the preview
+     * surface to render with a different icon pack without affecting the real workspace.
+     *
+     * <p>Default implementation is a no-op. Subclasses that support icon packs should override.
+     */
+    public void setPreviewIconPackOverride(@Nullable String iconPackPackage) {
+        // No-op in base class
     }
 }

@@ -24,6 +24,7 @@ import static com.android.launcher3.LauncherPrefs.GRID_NAME;
 import static com.android.launcher3.LauncherPrefs.NON_FIXED_LANDSCAPE_GRID_NAME;
 import static com.android.launcher3.WorkspaceLayoutManager.FIRST_SCREEN_ID;
 import static com.android.launcher3.util.Executors.MAIN_EXECUTOR;
+import static com.android.launcher3.util.Executors.MODEL_EXECUTOR;
 import static com.android.launcher3.widget.LauncherWidgetHolder.APPWIDGET_HOST_ID;
 
 import android.app.WallpaperColors;
@@ -48,6 +49,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
 import com.android.launcher3.InvariantDeviceProfile;
+import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.LauncherPrefs;
 import com.android.launcher3.dagger.LauncherComponentProvider;
 import com.android.launcher3.graphics.GridCustomizationsProxy;
@@ -258,6 +260,45 @@ public class PreviewSurfaceRenderer {
     public void previewColor(Bundle bundle) {
         if (!updateColorOverrides(bundle)) return;
         MAIN_EXECUTOR.execute(this::recreatePreviewRenderer);
+    }
+
+    @Nullable
+    private String mLastPreviewIconPack = null;
+
+    /**
+     * Updates the icon pack for the preview without writing to SharedPreferences.
+     * This sets a preview-only override on the icon provider so the preview surface
+     * renders with the new icon pack while the real workspace remains unchanged.
+     *
+     * @param bundle Bundle with the icon pack package name keyed by
+     *               {@link GridCustomizationsProxy#ICON_PACK_VALUE}.
+     */
+    public void previewIconPack(Bundle bundle) {
+        String iconPackPkg = bundle.getString(GridCustomizationsProxy.ICON_PACK_VALUE, "");
+
+        // Skip if the icon pack is already the one being previewed
+        if (TextUtils.equals(iconPackPkg, mLastPreviewIconPack)) return;
+        mLastPreviewIconPack = iconPackPkg;
+
+        LauncherAppState appState = mAppComponent.getLauncherAppState();
+        // Translate sentinel values:
+        //   ""             → null (revert to saved icon pack — resetPreview)
+        //   "system_icons" → ""   (user chose System Icons)
+        //   other          → pack (user chose a custom pack)
+        if (iconPackPkg.isEmpty()) {
+            appState.getIconProvider().setPreviewIconPackOverride(null);
+        } else if ("system_icons".equals(iconPackPkg)) {
+            appState.getIconProvider().setPreviewIconPackOverride("");
+        } else {
+            appState.getIconProvider().setPreviewIconPackOverride(iconPackPkg);
+        }
+        // Clear icon pool and cache on the model thread, force reload, then recreate on main
+        mAppComponent.getIconPool().clear();
+        MODEL_EXECUTOR.execute(() -> {
+            appState.getIconCache().clearMemoryCache();
+            appState.getModel().forceReload("icon-pack-preview");
+            MAIN_EXECUTOR.execute(this::recreatePreviewRenderer);
+        });
     }
 
     /**

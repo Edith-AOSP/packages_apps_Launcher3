@@ -73,6 +73,8 @@ class PreviewLifecycleObserver(
 
             MESSAGE_ID_UPDATE_ICON_THEMED -> executeUpdate(ICON_THEMED, message.data)
 
+            MESSAGE_ID_UPDATE_ICON_PACK -> renderer.previewIconPack(message.data)
+
             MESSAGE_ID_UPDATE_COMMAND ->
                 executeUpdate(message.data.getString(KEY_UPDATE_METHOD) ?: "", message.data)
 
@@ -106,6 +108,13 @@ class PreviewLifecycleObserver(
         private const val MESSAGE_ID_UPDATE_GRID = 7414
         @Deprecated("Use [MESSAGE_ID_UPDATE_COMMAND] instead")
         private const val MESSAGE_ID_UPDATE_ICON_THEMED = 311
+
+        /**
+         * Message to preview an icon pack without persisting to SharedPreferences.
+         * Unlike other updates, this bypasses [GridCustomizationsProxy] and directly
+         * sets a preview override on the icon provider.
+         */
+        private const val MESSAGE_ID_UPDATE_ICON_PACK = 1738
 
         /**
          * A generic message which delegates the actual update to the customization API The method
