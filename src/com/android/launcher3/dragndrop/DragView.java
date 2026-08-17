@@ -61,9 +61,11 @@ import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.folder.ClippedFolderIconLayoutRule;
 import com.android.launcher3.graphics.ThemeManager;
+import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.FastBitmapDrawable;
 import com.android.launcher3.icons.IconNormalizer;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.util.RunnableList;
 import com.android.launcher3.util.ViewEx;
 import com.android.launcher3.views.ActivityContext;
@@ -275,7 +277,10 @@ public class DragView extends FrameLayout {
             ThemeManager themeManager = ThemeManager.INSTANCE.get(getContext());
             int w = mWidth;
             int h = mHeight;
-            var fullDrawable = mActivity.getActivityComponent().getIconLoader().getFullDrawable(
+            var fullDrawable = info instanceof ItemInfoWithIcon iiwi
+                    && (iiwi.bitmap.getFlags() & BitmapInfo.FLAG_ICON_PACK) != 0
+                    ? null
+                    : mActivity.getActivityComponent().getIconLoader().getFullDrawable(
                     info, w, h, themeManager.isIconThemeEnabled());
             if (fullDrawable != null) {
                 AdaptiveIconDrawable adaptiveIcon = fullDrawable.icon;

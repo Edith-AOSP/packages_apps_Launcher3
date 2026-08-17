@@ -54,6 +54,7 @@ import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.folder.FolderIcon;
 import com.android.launcher3.graphics.IconLoader;
 import com.android.launcher3.graphics.PreloadIconDelegate;
+import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.FastBitmapDrawable;
 import com.android.launcher3.icons.IconNormalizer;
 import com.android.launcher3.model.data.ItemInfo;
@@ -320,7 +321,9 @@ public class FloatingIconView extends FrameLayout implements
             int width = (int) pos.width();
             int height = (int) pos.height();
             IconLoader.Result fullIcon = null;
-            if (supportsAdaptiveIcons) {
+            boolean isFromIconPack = info instanceof ItemInfoWithIcon iiwi
+                    && (iiwi.bitmap.getFlags() & BitmapInfo.FLAG_ICON_PACK) != 0;
+            if (supportsAdaptiveIcons && !isFromIconPack) {
                 boolean shouldThemeIcon = (btvIcon instanceof FastBitmapDrawable fbd)
                         && fbd.isCreatedForTheme();
                 fullIcon = l.getActivityComponent().getIconLoader().getFullDrawable(
