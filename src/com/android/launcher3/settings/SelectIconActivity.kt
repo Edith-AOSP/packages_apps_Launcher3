@@ -19,13 +19,12 @@ package com.android.launcher3.settings
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -74,6 +73,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -81,12 +81,11 @@ import com.android.compose.theme.PlatformTheme
 import com.android.launcher3.LauncherAppState
 import com.android.launcher3.R
 import com.android.launcher3.data.iconoverride.IconOverrideRepository
-import com.android.launcher3.icons.iconpack.IconEntry
 import com.android.launcher3.icons.iconpack.IconPack
 import com.android.launcher3.icons.iconpack.IconPackProvider
 import com.android.launcher3.icons.iconpack.IconPickerCategory
+import com.android.launcher3.icons.iconpack.IconPickerIconCache
 import com.android.launcher3.icons.iconpack.IconPickerItem
-import com.android.launcher3.icons.iconpack.IconType
 import com.android.launcher3.icons.iconpack.filter
 import com.android.launcher3.util.ComponentKey
 import kotlinx.coroutines.Dispatchers
@@ -111,14 +110,18 @@ class SelectIconActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val componentKeyString = intent.getStringExtra(EXTRA_COMPONENT_KEY) ?: run {
-            finish()
-            return
-        }
-        val componentKey = ComponentKey.fromString(componentKeyString) ?: run {
-            finish()
-            return
-        }
+        val componentKeyString =
+            intent.getStringExtra(EXTRA_COMPONENT_KEY)
+                ?: run {
+                    finish()
+                    return
+                }
+        val componentKey =
+            ComponentKey.fromString(componentKeyString)
+                ?: run {
+                    finish()
+                    return
+                }
         val appLabel = intent.getStringExtra(EXTRA_APP_LABEL) ?: ""
 
         setContent {
@@ -127,9 +130,7 @@ class SelectIconActivity : ComponentActivity() {
                     appName = appLabel,
                     componentKey = componentKey,
                     onIconSelected = { item ->
-                        IconOverrideRepository.getInstance(this).setOverride(
-                            componentKey, item,
-                        )
+                        IconOverrideRepository.getInstance(this).setOverride(componentKey, item)
                         finish()
                     },
                     onBack = { finish() },
@@ -153,9 +154,7 @@ fun IconPickerScreen(
     var selectedPack by remember { mutableStateOf<IconPack?>(null) }
     val repo = remember { IconOverrideRepository.getInstance(context) }
 
-    BackHandler(selectedPack != null) {
-        selectedPack = null
-    }
+    BackHandler(selectedPack != null) { selectedPack = null }
 
     if (selectedPack == null) {
         val hasOverride = repo.overridesMap[componentKey] != null
@@ -164,20 +163,23 @@ fun IconPickerScreen(
             packs = packs,
             onBack = onBack,
             onPackClick = { pack -> selectedPack = pack },
-            onRestoreDefault = if (hasOverride) ({
-                repo.deleteOverride(componentKey)
-                LauncherAppState.getInstance(context).model.reloadIfActive("icon-override-restored")
-                onBack()
-            }) else null,
+            onRestoreDefault =
+                if (hasOverride)
+                    ({
+                        repo.deleteOverride(componentKey)
+                        LauncherAppState.getInstance(context)
+                            .model
+                            .reloadIfActive("icon-override-restored")
+                        onBack()
+                    })
+                else null,
         )
     } else {
         val pack = selectedPack!!
         IconPackScreen(
             pack = pack,
             onIconSelected = onIconSelected,
-            onBack = {
-                selectedPack = null
-            },
+            onBack = { selectedPack = null },
         )
     }
 }
@@ -200,11 +202,12 @@ private fun PackListScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Close")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
             )
-        },
+        }
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
@@ -213,10 +216,10 @@ private fun PackListScreen(
             if (onRestoreDefault != null) {
                 item {
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clickable(onClick = onRestoreDefault),
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable(onClick = onRestoreDefault),
                         shape = RoundedCornerShape(12.dp),
                         tonalElevation = 1.dp,
                     ) {
@@ -230,10 +233,10 @@ private fun PackListScreen(
             }
             items(packs) { pack ->
                 Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { onPackClick(pack) },
+                    modifier =
+                        Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable {
+                            onPackClick(pack)
+                        },
                     shape = RoundedCornerShape(12.dp),
                     tonalElevation = 1.dp,
                 ) {
@@ -265,27 +268,28 @@ private fun IconPackScreen(
                     onValueChange = { searchQuery = it },
                     placeholder = { Text(pack.label) },
                     onBack = onBack,
-                    modifier = Modifier.statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier =
+                        Modifier.statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }
         },
         bottomBar = { Spacer(Modifier.height(16.dp)) },
     ) { padding ->
-        val categories by produceState<List<IconPickerCategory>?>(null, pack) {
-            withContext(Dispatchers.IO) {
-                pack.getAllIcons().firstOrNull()
-            }.also { value = it }
-        }
+        val categories by
+            produceState<List<IconPickerCategory>?>(null, pack) {
+                withContext(Dispatchers.IO) { pack.getAllIcons().firstOrNull() }.also { value = it }
+            }
         if (categories == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
-            val filtered = remember(categories!!, searchQuery) {
-                if (searchQuery.isBlank()) categories!!
-                else categories!!.map { it.filter(searchQuery) }.filter { it.items.isNotEmpty() }
-            }
+            val filtered =
+                remember(categories!!, searchQuery) {
+                    if (searchQuery.isBlank()) categories!!
+                    else
+                        categories!!.map { it.filter(searchQuery) }.filter { it.items.isNotEmpty() }
+                }
             IconGrid(filtered, pack, onIconSelected, padding)
         }
     }
@@ -301,46 +305,46 @@ private fun IconPackSearchBar(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
-        IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-        }
+        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.weight(1f),
             singleLine = true,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-            ),
+            textStyle =
+                MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            decorationBox = @Composable { innerTextField ->
-                OutlinedTextFieldDefaults.DecorationBox(
-                    value = value,
-                    innerTextField = innerTextField,
-                    enabled = true,
-                    singleLine = true,
-                    visualTransformation = VisualTransformation.None,
-                    interactionSource = remember { MutableInteractionSource() },
-                    placeholder = placeholder,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                    ),
-                    contentPadding = PaddingValues(0.dp),
-                    container = {},
-                )
-            },
+            decorationBox =
+                @Composable { innerTextField ->
+                    OutlinedTextFieldDefaults.DecorationBox(
+                        value = value,
+                        innerTextField = innerTextField,
+                        enabled = true,
+                        singleLine = true,
+                        visualTransformation = VisualTransformation.None,
+                        interactionSource = remember { MutableInteractionSource() },
+                        placeholder = placeholder,
+                        colors =
+                            OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.Transparent,
+                                unfocusedBorderColor = Color.Transparent,
+                            ),
+                        contentPadding = PaddingValues(0.dp),
+                        container = {},
+                    )
+                },
         )
         if (value.isNotEmpty()) {
-            IconButton(onClick = { onValueChange("") }) {
-                Icon(Icons.Rounded.Clear, "Clear")
-            }
+            IconButton(onClick = { onValueChange("") }) { Icon(Icons.Rounded.Clear, "Clear") }
         }
     }
 }
@@ -354,35 +358,40 @@ private fun IconGrid(
     padding: PaddingValues,
 ) {
     val numColumns = 5
+    val chunkedCategories =
+        remember(categories) {
+            categories.map { category -> category to category.items.chunked(numColumns) }
+        }
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding),
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
     ) {
-        categories.forEach { category ->
-            stickyHeader {
+        chunkedCategories.forEach { (category, rows) ->
+            stickyHeader(key = category.title) {
                 Text(
                     text = category.title,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            items(category.items.chunked(numColumns)) { row ->
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
+            items(
+                count = rows.size,
+                key = { index -> "${category.title}:${rows[index].first().drawableName}" },
+            ) { index ->
+                val row = rows[index]
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     row.forEach { item ->
                         Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(1f)
-                                .padding(vertical = 4.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { onIconSelected(item) },
+                            modifier =
+                                Modifier.weight(1f)
+                                    .aspectRatio(1f)
+                                    .padding(vertical = 4.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { onIconSelected(item) },
                             contentAlignment = Alignment.Center,
                         ) {
                             IconPreview(pack, item)
@@ -395,41 +404,39 @@ private fun IconGrid(
     }
 }
 
-@Composable
-fun IconPreview(
-    pack: IconPack,
-    item: IconPickerItem,
-) {
-    val drawable by produceState<Drawable?>(null, item, pack) {
-        val entry = IconEntry(
-            packPackageName = item.packPackageName,
-            name = item.drawableName,
-            type = IconType.Normal,
-        )
-        value = withContext(Dispatchers.IO) {
-            pack.getIcon(entry, 0)
-        }
-    }
+private const val ICON_PREVIEW_SIZE_DP = 48
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (drawable != null) {
-            androidx.compose.foundation.Image(
-                painter = remember(drawable) {
-                    val bitmap = Bitmap.createBitmap(
-                        drawable!!.intrinsicWidth.coerceAtLeast(1),
-                        drawable!!.intrinsicHeight.coerceAtLeast(1),
-                        Bitmap.Config.ARGB_8888,
-                    )
-                    val canvas = Canvas(bitmap)
-                    drawable!!.setBounds(0, 0, canvas.width, canvas.height)
-                    drawable!!.draw(canvas)
-                    BitmapPainter(bitmap.asImageBitmap())
-                },
+@Composable
+fun IconPreview(pack: IconPack, item: IconPickerItem) {
+    val context = LocalContext.current
+    val iconSizePx = with(LocalDensity.current) { ICON_PREVIEW_SIZE_DP.dp.roundToPx() }
+    val bitmap by
+        produceState<Bitmap?>(null, item, pack) {
+            value =
+                withContext(Dispatchers.IO) {
+                    val cache = IconPickerIconCache.getInstance()
+                    val key =
+                        IconPickerIconCache.Key(
+                            packPackageName = item.packPackageName,
+                            drawableName = item.drawableName,
+                            sizePx = iconSizePx,
+                        )
+                    cache.get(key)
+                        ?: run {
+                            val drawable =
+                                pack.getIcon(
+                                    item.toIconEntry(),
+                                    context.resources.displayMetrics.densityDpi,
+                                ) ?: return@withContext null
+                            cache.render(drawable, iconSizePx).also { cache.put(key, it) }
+                        }
+                }
+        }
+
+    Box(modifier = Modifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.Center) {
+        bitmap?.let {
+            Image(
+                painter = remember(it) { BitmapPainter(it.asImageBitmap()) },
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit,
