@@ -151,6 +151,13 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.android.launcher3.settings.SelectIconActivity"
+            android:label="@string/customize_shortcut_label"
+            android:theme="@style/HomeSettings.Theme"
+            android:exported="false"
+            android:autoRemoveFromRecents="true" />
+
         <provider
             android:name="com.android.launcher3.testing.TestInformationProvider"
             android:authorities="${applicationId}.TestInfo"

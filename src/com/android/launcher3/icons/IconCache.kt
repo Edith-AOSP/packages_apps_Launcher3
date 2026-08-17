@@ -73,6 +73,7 @@ import com.android.launcher3.util.Executors
 import com.android.launcher3.util.Executors.MAIN_EXECUTOR
 import com.android.launcher3.util.InstantAppResolver
 import com.android.launcher3.util.LooperExecutor
+import org.edith.snowboard.preferences.SnowboardPreferenceManager
 import com.android.launcher3.util.PackageUserKey
 import com.android.launcher3.widget.WidgetSections
 import java.util.concurrent.Executor
@@ -462,6 +463,7 @@ constructor(
             createBulkQueryCursor(filteredList, sectionKey.user, sectionKey.lookupFlag).use { c ->
                 // Database title and icon loading
                 val componentNameColumnIndex = c.getColumnIndexOrThrow(COLUMN_COMPONENT)
+                val freshnessColumnIndex = c.getColumnIndexOrThrow(COLUMN_FRESHNESS_ID)
                 c.asSequence().forEach { _ ->
                     val cn =
                         ComponentName.unflattenFromString(c.getString(componentNameColumnIndex))
@@ -472,6 +474,17 @@ constructor(
                             TAG,
                             "Found entry in icon database but no main activity entry for cn: $cn",
                         )
+                        return@forEach
+                    }
+
+                    // Skip stale cache entries whose freshness no longer matches the current
+                    // icon state, so that the fallback path loads the icon again.
+                    val lai = duplicateIconRequests[0].launcherActivityInfo
+                    if (
+                        lai != null &&
+                            c.getString(freshnessColumnIndex) !=
+                                iconProvider.getStateForApp(lai.applicationInfo).toString()
+                    ) {
                         return@forEach
                     }
 
@@ -584,6 +597,17 @@ constructor(
         info.bitmap = entry.bitmap
         // Clear any previously set appTitle, if the packageOverride is no longer valid
         info.appTitle = null
+
+        // Check for per-app custom label override
+        val key = info.getComponentKey()
+        if (key != null) {
+            val customLabel = SnowboardPreferenceManager.getInstance(context).getCustomLabel(key)
+            if (!customLabel.isNullOrEmpty()) {
+                info.title = customLabel
+                info.contentDescription = getUserBadgedLabel(customLabel, info.user)
+            }
+        }
+
         if (entry.bitmap == null) {
             // TODO: entry.bitmap can never be null, so this should not happen at all.
             Log.wtf(TAG, "Cannot find bitmap from the cache, default icon was loaded.")

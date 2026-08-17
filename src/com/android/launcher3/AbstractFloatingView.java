@@ -110,6 +110,7 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
     public static final int TYPE_NUDGE = 1 << 24;
     public static final int TYPE_TASKBAR_OVERFLOW = 1 << 25;
     public static final int TYPE_DIALOG_LISTENER = 1 << 26;
+    public static final int TYPE_COMPOSE_SHEET = 1 << 27;
 
     public static final int TYPE_ALL = TYPE_FOLDER | TYPE_ACTION_POPUP
             | TYPE_WIDGETS_BOTTOM_SHEET | TYPE_WIDGET_RESIZE_FRAME
@@ -119,14 +120,14 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
             | TYPE_TASKBAR_EDUCATION_DIALOG | TYPE_TASKBAR_ALL_APPS | TYPE_OPTIONS_POPUP_DIALOG
             | TYPE_ADD_TO_HOME_CONFIRMATION | TYPE_TASKBAR_OVERLAY_PROXY
             | TYPE_TASKBAR_PINNING_POPUP | TYPE_PIN_IME_POPUP | TYPE_ONE_GRID_MIGRATION_EDU
-            | TYPE_NUDGE | TYPE_TASKBAR_OVERFLOW | TYPE_DIALOG_LISTENER;
+            | TYPE_NUDGE | TYPE_TASKBAR_OVERFLOW | TYPE_DIALOG_LISTENER | TYPE_COMPOSE_SHEET;
 
     // Type of popups which should be kept open during launcher rebind
     public static final int TYPE_REBIND_SAFE = TYPE_WIDGETS_BOTTOM_SHEET
             | TYPE_ON_BOARD_POPUP | TYPE_DISCOVERY_BOUNCE
             | TYPE_ALL_APPS_EDU | TYPE_ICON_SURFACE | TYPE_TASKBAR_EDUCATION_DIALOG
             | TYPE_TASKBAR_ALL_APPS | TYPE_OPTIONS_POPUP_DIALOG | TYPE_TASKBAR_OVERLAY_PROXY
-            | TYPE_PIN_IME_POPUP | TYPE_ONE_GRID_MIGRATION_EDU | TYPE_NUDGE;
+            | TYPE_PIN_IME_POPUP | TYPE_ONE_GRID_MIGRATION_EDU | TYPE_NUDGE | TYPE_COMPOSE_SHEET;
 
     /** Type of popups that should get exclusive accessibility focus. */
     public static final int TYPE_ACCESSIBLE = TYPE_ALL & ~TYPE_DISCOVERY_BOUNCE & ~TYPE_LISTENER

@@ -93,6 +93,7 @@ import static com.android.launcher3.popup.SystemShortcut.APP_INFO;
 import static com.android.launcher3.popup.SystemShortcut.INSTALL;
 import static com.android.launcher3.popup.SystemShortcut.REMOVE;
 import static com.android.launcher3.popup.SystemShortcut.WIDGETS;
+import static com.android.launcher3.popup.SnowboardCustomizeShortcut.CUSTOMIZE;
 import static com.android.launcher3.states.RotationHelper.REQUEST_LOCK;
 import static com.android.launcher3.states.RotationHelper.REQUEST_NONE;
 import static com.android.launcher3.testing.shared.TestProtocol.LAUNCHER_ACTIVITY_LOST_WINDOW_FOCUS_MESSAGE;
@@ -2805,18 +2806,18 @@ public class Launcher extends StatefulActivity<LauncherState>
     public Stream<SystemShortcut.Factory> getSupportedShortcuts(ItemInfo itemInfo) {
         int container = itemInfo.container;
         if (container == CONTAINER_DESKTOP || container == CONTAINER_HOTSEAT) {
-            return Stream.of(APP_INFO, WIDGETS, INSTALL, REMOVE);
+            return Stream.of(APP_INFO, WIDGETS, INSTALL, REMOVE, CUSTOMIZE);
         } else if (container == CONTAINER_ALL_APPS || container == CONTAINER_ALL_APPS_PREDICTION) {
             // TODO(b/444744861): Update private space apps to have its own container.
             boolean isPinnable = itemInfo instanceof ItemInfoWithIcon info
                     && (info.runtimeStatusFlags & FLAG_NOT_PINNABLE) == 0;
             if (isPinnable) {
-                return Stream.of(APP_INFO, WIDGETS, INSTALL, ADD_TO_HOME_SCREEN);
+                return Stream.of(APP_INFO, WIDGETS, INSTALL, ADD_TO_HOME_SCREEN, CUSTOMIZE);
             } else {
-                return Stream.of(APP_INFO, WIDGETS, INSTALL);
+                return Stream.of(APP_INFO, WIDGETS, INSTALL, CUSTOMIZE);
             }
         }
-        return Stream.of(APP_INFO, WIDGETS, INSTALL);
+        return Stream.of(APP_INFO, WIDGETS, INSTALL, CUSTOMIZE);
     }
 
     /**
