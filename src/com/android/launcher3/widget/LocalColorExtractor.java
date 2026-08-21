@@ -19,7 +19,6 @@ package com.android.launcher3.widget;
 import android.app.WallpaperColors;
 import android.appwidget.AppWidgetHostView;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.theming.ThemeStyle;
 import android.util.SparseIntArray;
 import android.widget.RemoteViews;
@@ -114,27 +113,24 @@ public class LocalColorExtractor {
      * Builds a color override from a Material You seed + style. This is the seed+style path used by
      * the picker's theme-service protocol.
      *
-     * <p>We generate the full {@code system_*} palette here — including both the light and dark
-     * tonal shades — so a themed icon resolves {@code themed_icon_color} (which switches between
-     * {@code system_accent1_700} in light mode and {@code system_accent1_200} in dark mode) to the
-     * previewing colour for <em>that</em> mode.
+     * <p>Delegates to the platform's {@link RemoteViews.ColorResources#createWithOverlay(Context,
+     * int[], int)}, which asks {@link android.app.ThemeManager} to generate the dynamic color
+     * overlay. That produces the correct {@code system_*_light}/{@code system_*_dark} day/night
+     * variants, so themed icons resolve {@code themed_icon_color} (which aliases
+     * {@code system_accent1_700} in light and {@code system_accent1_200} in dark) to the previewing
+     * colour for whichever night mode the preview context is in.
      */
     @Nullable
     public ColorsOverride applyColorOverlay(@NonNull Context base, @NonNull int[] seedColors,
             int style) {
         if (base == null || seedColors.length == 0) return null;
-        int seed = seedColors[0];
-        int resolvedStyle = style > 0 ? style : ThemeStyle.TONAL_SPOT;
-        boolean isDark = isDarkMode(base);
-        SparseIntArray mapping = buildColorMap(/* colors= */ null, seed, /* hasSeed= */ true,
-                resolvedStyle, isDark);
-        if (mapping == null || mapping.size() == 0) return null;
-        return applyColorsOverride(base, mapping);
-    }
-
-    private static boolean isDarkMode(Context context) {
-        return (context.getResources().getConfiguration().uiMode
-                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        RemoteViews.ColorResources resources =
+                RemoteViews.ColorResources.createWithOverlay(base, seedColors, style);
+        if (resources == null) return null;
+        ColorsOverrideImpl colorsOverride =
+                new ColorsOverrideImpl(resources, resources.getColorMapping());
+        colorsOverride.applyTo(base);
+        return colorsOverride;
     }
 
     /**
