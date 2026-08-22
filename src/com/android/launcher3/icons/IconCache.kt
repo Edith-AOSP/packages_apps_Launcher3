@@ -463,7 +463,10 @@ constructor(
             createBulkQueryCursor(filteredList, sectionKey.user, sectionKey.lookupFlag).use { c ->
                 // Database title and icon loading
                 val componentNameColumnIndex = c.getColumnIndexOrThrow(COLUMN_COMPONENT)
-                val freshnessColumnIndex = c.getColumnIndexOrThrow(COLUMN_FRESHNESS_ID)
+                // Low-res bulk queries don't include the freshness column (see
+                // BaseIconCache.COLUMNS_LOW_RES), so use getColumnIndex and guard below
+                // instead of getColumnIndexOrThrow, which would crash the loader.
+                val freshnessColumnIndex = c.getColumnIndex(COLUMN_FRESHNESS_ID)
                 c.asSequence().forEach { _ ->
                     val cn =
                         ComponentName.unflattenFromString(c.getString(componentNameColumnIndex))
@@ -478,10 +481,12 @@ constructor(
                     }
 
                     // Skip stale cache entries whose freshness no longer matches the current
-                    // icon state, so that the fallback path loads the icon again.
+                    // icon state, so that the fallback path loads the icon again. Only applies
+                    // when the freshness column is present (i.e. high-res queries).
                     val lai = duplicateIconRequests[0].launcherActivityInfo
                     if (
-                        lai != null &&
+                        freshnessColumnIndex >= 0 &&
+                            lai != null &&
                             c.getString(freshnessColumnIndex) !=
                                 iconProvider.getStateForApp(lai.applicationInfo).toString()
                     ) {
