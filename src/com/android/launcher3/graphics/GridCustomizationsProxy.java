@@ -276,8 +276,9 @@ public class GridCustomizationsProxy implements ProxyProvider {
             case GET_ICON_PACK:
             case ICON_PACK: {
                 MatrixCursor iconPackCursor = new MatrixCursor(new String[]{ICON_PACK_VALUE});
-                SharedPreferences prefs = mContext.getSharedPreferences(
-                        LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+                SharedPreferences prefs = mContext.createDeviceProtectedStorageContext()
+                        .getSharedPreferences(
+                                LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
                 String iconPack = prefs.getString("pref_iconPackPackage", "");
                 iconPackCursor.newRow().add(ICON_PACK_VALUE, iconPack != null ? iconPack : "");
                 Log.d(TAG, "query: path=" + path + ", iconPack=" + iconPack);
@@ -355,8 +356,9 @@ public class GridCustomizationsProxy implements ProxyProvider {
             }
             case ICON_PACK: {
                 String iconPackPkg = values.getAsString(ICON_PACK_VALUE);
-                SharedPreferences prefs = mContext.getSharedPreferences(
-                        LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+                SharedPreferences prefs = mContext.createDeviceProtectedStorageContext()
+                        .getSharedPreferences(
+                                LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
                 prefs.edit().putString("pref_iconPackPackage",
                         iconPackPkg != null ? iconPackPkg : "").commit();
                 LauncherIcons.clearPool(mContext);

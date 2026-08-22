@@ -99,7 +99,7 @@ constructor(
 
     private val listeners = CopyOnWriteArrayList<ThemeChangeListener>()
 
-    private val iconPackPrefs = context.getSharedPreferences(
+    private val iconPackPrefs = context.createDeviceProtectedStorageContext().getSharedPreferences(
         LauncherFiles.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE,
     )
     private val iconPackListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->

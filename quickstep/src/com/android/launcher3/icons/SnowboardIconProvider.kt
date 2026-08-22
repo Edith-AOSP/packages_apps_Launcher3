@@ -73,7 +73,7 @@ constructor(
         // If a preview override is set, use it instead of reading from SharedPreferences
         if (previewIconPackOverride != null) return previewIconPackOverride!!
         return try {
-            mContext.getSharedPreferences(
+            mContext.createDeviceProtectedStorageContext().getSharedPreferences(
                 LauncherFiles.SHARED_PREFERENCES_KEY,
                 android.content.Context.MODE_PRIVATE,
             )
