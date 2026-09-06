@@ -36,6 +36,9 @@ public class CustomLauncher extends QuickstepLauncher {
     private LauncherUnlockAnimationController mUnlockAnimationController =
             new LauncherUnlockAnimationController(this);
 
+    private final LauncherPrefChangeListener mSmartspacePrefListener =
+            key -> getModel().forceReload("smartspace-pref-changed");
+
     public BcSmartspaceDataProvider getSmartspacePlugin() {
         return mSmartspacePlugin;
     }
@@ -51,11 +54,14 @@ public class CustomLauncher extends QuickstepLauncher {
         // ModelCallbacks dispatches each fixed container to whoever registered for its id.
         modelCallbacks.getExtraContainerCallbacks().put(
                 CustomLauncherModelDelegate.CONTAINER_SMARTSPACE, this::onSmartspaceTargetsBound);
+        // Switching smartspace off/on toggles the workspace row, which lives in the database.
+        LauncherPrefs.get(this).addListener(mSmartspacePrefListener, LauncherPrefs.SMARTSPACE);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        LauncherPrefs.get(this).removeListener(mSmartspacePrefListener, LauncherPrefs.SMARTSPACE);
         SystemUiProxy.INSTANCE.get(this).setLauncherUnlockAnimationController("null", null);
     }
 

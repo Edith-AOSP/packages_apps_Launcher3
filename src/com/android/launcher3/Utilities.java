@@ -131,6 +131,8 @@ public final class Utilities {
     @IntDef({TRANSLATE_UP, TRANSLATE_DOWN, TRANSLATE_LEFT, TRANSLATE_RIGHT})
     public @interface AdjustmentDirection{}
 
+    public static final String KEY_SMARTSPACE = "pref_smartspace";
+
     /**
      * Returns true if theme is dark.
      */
@@ -940,5 +942,9 @@ public final class Utilities {
 
     public static boolean isWorkspaceEditAllowed(Context context) {
         return !LauncherPrefs.WORKSPACE_LOCK.get(context);
+    }
+
+    public static boolean showSmartspace(Context context) {
+        return LauncherPrefs.SMARTSPACE.get(context);
     }
 }
