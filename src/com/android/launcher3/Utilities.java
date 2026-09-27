@@ -134,6 +134,14 @@ public final class Utilities {
     public static final String KEY_SMARTSPACE = "pref_smartspace";
 
     /**
+     * Returns true if the first row of the first workspace screen is reserved for the search
+     * container / smartspace, meaning no regular workspace item is placed there.
+     */
+    public static boolean qsbOnFirstScreen() {
+        return BuildConfig.QSB_ON_FIRST_SCREEN;
+    }
+
+    /**
      * Returns true if theme is dark.
      */
     public static boolean isDarkTheme(Context context) {

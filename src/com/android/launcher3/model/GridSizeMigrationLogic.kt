@@ -15,6 +15,7 @@
  */
 package com.android.launcher3.model
 
+import android.content.ComponentName
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Point
@@ -25,6 +26,7 @@ import com.android.launcher3.LauncherSettings
 import com.android.launcher3.LauncherSettings.Favorites
 import com.android.launcher3.LauncherSettings.Favorites.TABLE_NAME
 import com.android.launcher3.LauncherSettings.Favorites.TMP_TABLE
+import com.android.launcher3.Utilities
 import com.android.launcher3.dagger.ApplicationContext
 import com.android.launcher3.logging.FileLog
 import com.android.launcher3.logging.StatsLogManager
@@ -39,9 +41,11 @@ import com.android.launcher3.provider.LauncherDbUtils.SQLiteTransaction
 import com.android.launcher3.provider.LauncherDbUtils.copyTable
 import com.android.launcher3.provider.LauncherDbUtils.dropTable
 import com.android.launcher3.provider.LauncherDbUtils.shiftWorkspaceByXCells
+import com.android.launcher3.qsb.SmartspaceCustomWidget
 import com.android.launcher3.util.CellAndSpan
 import com.android.launcher3.util.GridOccupancy
 import com.android.launcher3.util.IntArray
+import com.android.launcher3.widget.LauncherAppWidgetProviderInfo
 import dagger.Lazy
 import javax.inject.Inject
 import javax.inject.Named
@@ -503,7 +507,13 @@ constructor(
         val itemsToPlace = WorkspaceItemsToPlace(sortedItemsToPlace, mutableListOf())
         val occupied = GridOccupancy(trgX, trgY)
         val trg = Point(trgX, trgY)
-        val next = Point(0, 0)
+        // Keep the first row of the first screen clear so the smartspace widget can sit there.
+        val next =
+            if (screenId == 0 && Utilities.qsbOnFirstScreen()) {
+                Point(0, 1 /* smartspace */)
+            } else {
+                Point(0, 0)
+            }
         if (existedEntries != null) {
             for (entry in existedEntries) {
                 occupied.markCells(entry, true)
@@ -518,11 +528,26 @@ constructor(
         val iterator = itemsToPlace.mRemainingItemsToPlace.iterator()
         while (iterator.hasNext()) {
             val entry = iterator.next()
+            // The smartspace widget spans the whole grid width, so on a narrower target grid its
+            // min span would otherwise exceed the grid and drop the row entirely. Clamp it to the
+            // target size instead; SmartspaceCustomWidget.updateWidgetInfo() re-normalizes the span
+            // on the next model load.
+            val smartspace = isSmartspaceWidget(entry)
+            if (smartspace) {
+                entry.minSpanX = minOf(entry.minSpanX, trgX)
+                entry.minSpanY = minOf(entry.minSpanY, trgY)
+                entry.spanX = minOf(entry.spanX, trgX)
+                entry.spanY = minOf(entry.spanY, trgY)
+            }
             if (entry.minSpanX > trgX || entry.minSpanY > trgY) {
                 iterator.remove()
                 continue
             }
-            findPlacementForEntry(entry, next.x, next.y, trg, occupied)?.let {
+            // Smartspace belongs on the first row of the first screen; search from (0, 0) for it
+            // even though `next` is offset to keep that row clear for other items.
+            val startX = if (smartspace) 0 else next.x
+            val startY = if (smartspace) 0 else next.y
+            findPlacementForEntry(entry, startX, startY, trg, occupied)?.let {
                 entry.screenId = screenId
                 entry.cellX = it.cellX
                 entry.cellY = it.cellY
@@ -561,6 +586,21 @@ constructor(
             newStartPosX = 0
         }
         return null
+    }
+
+    /**
+     * Whether the given entry is the smartspace custom widget row added by the first screen layout
+     * (`custom-widget/smartspace-widget`). Such a row should never be dropped when changing grids;
+     * it is clamped to the new grid size instead.
+     */
+    private fun isSmartspaceWidget(entry: DbEntry): Boolean {
+        if (entry.itemType != Favorites.ITEM_TYPE_APPWIDGET) {
+            return false
+        }
+        val provider = entry.mProvider ?: return false
+        val cn = ComponentName.unflattenFromString(provider) ?: return false
+        return cn.packageName == LauncherAppWidgetProviderInfo.CUSTOM_WIDGET_PACKAGE &&
+            cn.className == SmartspaceCustomWidget.id
     }
 
     private data class WorkspaceItemsToPlace(
