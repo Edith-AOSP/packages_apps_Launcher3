@@ -272,6 +272,14 @@ constructor(
         val workspaceToBeAdded = getItemsToBeAdded(srcWorkspaceItems, dstWorkspaceItems)
         toBeRemoved.addAll(getItemsToBeRemoved(srcWorkspaceItems, dstWorkspaceItems))
 
+        // The smartspace occupies the first row of screen 0. Older default layouts also declared a
+        // Google search appwidget in that same cell; if both are present, drop the search appwidget
+        // so the two do not compete for the first row during placement (which previously could
+        // remove the smartspace). New layouts no longer declare the search appwidget at all.
+        if (workspaceToBeAdded.any { isSmartspaceWidget(it) }) {
+            workspaceToBeAdded.removeAll { isFirstScreenSearchWidget(it) }
+        }
+
         if (DEBUG) {
             Log.d(
                 TAG,
@@ -601,6 +609,21 @@ constructor(
         val cn = ComponentName.unflattenFromString(provider) ?: return false
         return cn.packageName == LauncherAppWidgetProviderInfo.CUSTOM_WIDGET_PACKAGE &&
             cn.className == SmartspaceCustomWidget.id
+    }
+
+    /**
+     * Whether the entry is the legacy Google search-home appwidget that used to occupy the first
+     * row of screen 0 (`com.google.android.googlequicksearchbox.SearchWidgetProvider`). Superseded
+     * by the smartspace widget, so it is dropped during migration when a smartspace row exists.
+     */
+    private fun isFirstScreenSearchWidget(entry: DbEntry): Boolean {
+        if (entry.itemType != Favorites.ITEM_TYPE_APPWIDGET || entry.screenId != 0) {
+            return false
+        }
+        val provider = entry.mProvider ?: return false
+        val cn = ComponentName.unflattenFromString(provider) ?: return false
+        return cn.packageName == "com.google.android.googlequicksearchbox" &&
+            cn.className == "com.google.android.googlequicksearchbox.SearchWidgetProvider"
     }
 
     private data class WorkspaceItemsToPlace(

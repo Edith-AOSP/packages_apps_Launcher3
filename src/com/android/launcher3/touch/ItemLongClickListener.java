@@ -36,6 +36,7 @@ import com.android.launcher3.folder.Folder;
 import com.android.launcher3.logging.StatsLogManager.StatsLogger;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.PrivateSpaceInstallAppButtonInfo;
+import com.android.launcher3.qsb.SmartspaceViewContainer;
 import com.android.launcher3.testing.TestLogging;
 import com.android.launcher3.testing.shared.TestProtocol;
 import com.android.launcher3.views.BubbleTextHolder;
@@ -53,6 +54,10 @@ public class ItemLongClickListener {
             ItemLongClickListener::onAllAppsItemLongClick;
 
     private static boolean onWorkspaceItemLongClick(View v) {
+        // The smartspace is a fixed first-screen element, not a user-placed widget: never drag it.
+        if (v instanceof SmartspaceViewContainer) {
+            return false;
+        }
         if (v instanceof LauncherAppWidgetHostView) {
             TestLogging.recordEvent(TestProtocol.SEQUENCE_MAIN, "Widgets.onLongClick");
         } else {
@@ -74,6 +79,10 @@ public class ItemLongClickListener {
 
     public static void beginDrag(View v, Launcher launcher, ItemInfo info,
             DragOptions dragOptions) {
+        // The smartspace is a fixed first-screen element, not a user-placed widget: never drag it.
+        if (v instanceof SmartspaceViewContainer) {
+            return;
+        }
         if (info.container >= 0) {
             Folder folder = Folder.getOpen(launcher);
             if (folder != null) {

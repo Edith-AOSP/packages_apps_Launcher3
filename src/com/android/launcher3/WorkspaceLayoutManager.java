@@ -25,6 +25,7 @@ import com.android.launcher3.celllayout.CellPosMapper.CellPos;
 import com.android.launcher3.folder.Folder;
 import com.android.launcher3.folder.FolderIcon;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.qsb.SmartspaceViewContainer;
 import com.android.launcher3.touch.ItemLongClickListener;
 import com.android.launcher3.util.IntSet;
 
@@ -140,9 +141,24 @@ public interface WorkspaceLayoutManager {
             lp.isLockedToGrid = false;
         }
 
+        // The smartspace is a fixed, pinned first-screen element: always keep it at the top-left
+        // of its screen regardless of any stale database position, and mark it non-reorderable so
+        // a drag-and-drop can never push it or displace it (see ReorderAlgorithm, which honours
+        // CellLayoutLayoutParams.canReorder).
+        if (child instanceof SmartspaceViewContainer) {
+            lp.setCellX(0);
+            lp.setCellY(0);
+            lp.canReorder = false;
+        }
+
         // Get the canonical child id to uniquely represent this view in this screen
         ItemInfo info = (ItemInfo) child.getTag();
-        int childId = info.getViewId();
+        // The smartspace is a fixed first-screen element, not a user-placed widget. Give its view
+        // the QSB view id so it is not draggable and fills the first row (the item is still keyed in
+        // the model by its real database id).
+        int childId = child instanceof SmartspaceViewContainer
+                ? R.id.search_container_workspace
+                : info.getViewId();
 
         boolean markCellsAsOccupied = !(child instanceof Folder);
         if (!layout.addViewToCellLayout(child, -1, childId, lp, markCellsAsOccupied)) {

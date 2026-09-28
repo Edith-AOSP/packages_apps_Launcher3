@@ -525,11 +525,10 @@ class WorkspaceItemProcessor(
      */
     private fun processWidget() {
         val component = ComponentName.unflattenFromString(c.appWidgetProvider!!)!!
-        if (
+        val isSmartspace =
             component.packageName == LauncherAppWidgetProviderInfo.CUSTOM_WIDGET_PACKAGE &&
-                component.className == SmartspaceCustomWidget.id &&
-                !Utilities.showSmartspace(context)
-        ) {
+                component.className == SmartspaceCustomWidget.id
+        if (isSmartspace && !Utilities.showSmartspace(context)) {
             // The row stays in the database, so switching the pref back on restores it.
             return
         }
@@ -537,6 +536,17 @@ class WorkspaceItemProcessor(
         c.applyCommonProperties(appWidgetInfo)
         appWidgetInfo.spanX = c.spanX
         appWidgetInfo.spanY = c.spanY
+        if (isSmartspace) {
+            // The smartspace is a fixed first-screen element pinned to the top-left of screen 0:
+            // force its position/span here (before checkItemPlacement runs) so a stale database
+            // value can't drop it, and so it spans the full grid width. Its non-draggable/full-row
+            // behaviour is applied in WorkspaceLayoutManager.setupChild.
+            appWidgetInfo.screenId = 0
+            appWidgetInfo.cellX = 0
+            appWidgetInfo.cellY = 0
+            appWidgetInfo.spanX = idp.numColumns
+            appWidgetInfo.spanY = if (idp.numRows > 5) 2 else 1
+        }
         appWidgetInfo.options = c.options
         appWidgetInfo.user = c.user
         appWidgetInfo.sourceContainer = c.appWidgetSource
