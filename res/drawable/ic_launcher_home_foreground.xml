@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2026 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="730"
+    android:viewportHeight="730">
+    <group
+        android:pivotX="365"
+        android:pivotY="365"
+        android:scaleX="0.63"
+        android:scaleY="0.63">
+        <path
+            android:pathData="M152.083 638.75C135.354 638.75 121.033 632.794 109.12 620.881C97.2066 608.967 91.25 594.646 91.25 577.917V152.084C91.25 135.355 97.2066 121.033 109.12 109.12C121.033 97.2071 135.354 91.2505 152.083 91.2505H577.917C594.646 91.2505 608.967 97.2071 620.88 109.12C632.793 121.033 638.75 135.355 638.75 152.084V577.917C638.75 594.646 632.793 608.967 620.88 620.881C608.967 632.794 594.646 638.75 577.917 638.75H456.25V577.917H577.917V167.5H152.083V577.917H273.75V638.75H152.083ZM334.583 638.75V451.688L285.917 500.355L243.333 456.25L365 334.584L486.667 456.25L444.083 500.355L395.417 451.688V638.75H334.583Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="365"
+                    android:startY="91.2505"
+                    android:endX="365"
+                    android:endY="638.75">
+                    <item android:offset="0" android:color="#FFFF9BF7" />
+                    <item android:offset="1" android:color="#FF7E94DB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+</vector>
