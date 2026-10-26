@@ -349,6 +349,7 @@ android_library {
         "androidx.navigation_navigation-compose",
         "PlatformComposeCore",
         "cuebarlib",
+        "lottie",
     ],
     manifest: "AndroidManifest-common.xml",
     sdk_version: "current",

@@ -172,6 +172,7 @@ import com.android.launcher3.dagger.LauncherComponentProvider;
 import com.android.launcher3.dragndrop.DragLayer;
 import com.android.launcher3.dragndrop.DragView;
 import com.android.launcher3.dragndrop.LauncherDragController;
+import com.android.launcher3.firstrun.FirstRunLoadingView;
 import com.android.launcher3.folder.Folder;
 import com.android.launcher3.folder.FolderIcon;
 import com.android.launcher3.keyboard.ViewGroupFocusHelper;
@@ -327,6 +328,9 @@ public class Launcher extends StatefulActivity<LauncherState>
     Hotseat mHotseat;
 
     private DropTargetBar mDropTargetBar;
+
+    @Thunk
+    FirstRunLoadingView mFirstRunLoading;
 
     // Main container view for the all apps screen.
     @Thunk
@@ -486,6 +490,11 @@ public class Launcher extends StatefulActivity<LauncherState>
 
         setContentView(getRootView());
         getRootView().dispatchInsets();
+
+        mFirstRunLoading = findViewById(R.id.first_run_loading);
+        if (mFirstRunLoading != null && !modelCallbacks.getWorkspaceLoading()) {
+            mFirstRunLoading.onWorkspaceReady();
+        }
 
         final SettingsCache settingsCache = SettingsCache.INSTANCE.get(this);
         mNaturalScrollingChangedSafeCloseable = settingsCache.getListenableRef(
@@ -2197,7 +2206,11 @@ public class Launcher extends StatefulActivity<LauncherState>
      * <p>
      * Implementation of the method from LauncherModel.Callbacks.
      */
-    public void finishBindingItems(IntSet pagesBoundFirst) {}
+    public void finishBindingItems(IntSet pagesBoundFirst) {
+        if (mFirstRunLoading != null) {
+            mFirstRunLoading.onWorkspaceReady();
+        }
+    }
 
     private boolean canAnimatePageChange() {
         if (mDragController.isDragging()) {

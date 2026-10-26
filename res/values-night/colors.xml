@@ -17,4 +17,8 @@
 <resources>
     <!-- Home screen files -->
     <color name="home_screen_files_folder_icon_color">@color/system_primary_dark</color>
+
+    <!-- First-run loading screen -->
+    <color name="edith_first_run_background">#FF0F0F0F</color>
+    <color name="edith_first_run_content">#DEFFFFFF</color>
 </resources>

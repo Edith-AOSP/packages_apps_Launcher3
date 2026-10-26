@@ -17,6 +17,9 @@
     <!-- Application name -->
     <string name="edith_app_name" translatable="false">Snowboard</string>
 
+    <!-- First-run loading screen -->
+    <string name="edith_first_run_loading" translatable="false">Snowboard is starting</string>
+
     <!-- Folder titles -->
     <string name="google_folder_title" translatable="false">Google</string>
 

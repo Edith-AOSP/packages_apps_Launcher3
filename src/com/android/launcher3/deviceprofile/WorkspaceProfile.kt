@@ -611,7 +611,9 @@ data class WorkspaceProfile(
                         iconScale = iconScale,
                         cellScaleToFit = cellScaleToFit,
                         deviceProperties = deviceProperties,
-                        isScalableGrid = isScalableGrid,
+                        // Responsive specs carry their own edge padding; the legacy
+                        // dynamic_grid_edge_margin is not added on top.
+                        isScalableGrid = true,
                         isSeascape = isSeascape,
                         hotseatProfile = hotseatProfile,
                         isQsbInline = isQsbInline,

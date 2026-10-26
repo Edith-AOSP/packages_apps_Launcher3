@@ -93,18 +93,36 @@
 
     </grid-option>
 
+    <!-- Pixel Launcher phone grid: 4 columns, 5 rows, 4 hotseat icons. -->
     <grid-option
         launcher:name="4_by_5"
-        launcher:numRows="5"
-        launcher:numColumns="4"
         launcher:numFolderRows="3"
         launcher:numFolderColumns="3"
         launcher:numHotseatIcons="4"
         launcher:numExtendedHotseatIcons="6"
-        launcher:dbFile="launcher_4_by_5.db"
+        launcher:gridSizeSpecsId="@xml/spec_row_count_4_col"
+        launcher:workspaceSpecsId="@xml/spec_handheld_workspace_4_col"
+        launcher:workspaceCellSpecsId="@xml/spec_handheld_workspace_cell_4_col"
+        launcher:allAppsSpecsId="@xml/spec_handheld_all_apps_4_col"
+        launcher:allAppsCellSpecsId="@xml/spec_all_apps_cell_4_col"
+        launcher:folderSpecsId="@xml/spec_handheld_folder_4_col"
+        launcher:hotseatSpecsId="@xml/spec_handheld_hotseat_4_col"
         launcher:inlineNavButtonsEndSpacing="@dimen/taskbar_button_margin_split"
-        launcher:defaultLayoutId="@xml/default_workspace_4x5"
         launcher:deviceCategory="phone|multi_display" >
+
+        <display-option
+            launcher:name="Pixel 2021"
+            launcher:minWidthDps="367"
+            launcher:minHeightDps="838"
+            launcher:iconImageSize="66"
+            launcher:iconTextSize="14"
+            launcher:allAppsBorderSpace="16"
+            launcher:allAppsCellHeight="104"
+            launcher:minCellWidth="80"
+            launcher:minCellHeight="104"
+            launcher:borderSpace="16"
+            launcher:horizontalMargin="22"
+            launcher:canBeDefault="true" />
 
         <display-option
             launcher:name="Short Stubby"

@@ -85,4 +85,12 @@
 
     </com.android.launcher3.dragndrop.DragLayer>
 
+    <!-- First-launch loading overlay, hidden after the first workspace bind. -->
+    <com.android.launcher3.firstrun.FirstRunLoadingView
+        android:id="@+id/first_run_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/edith_first_run_background"
+        android:visibility="gone" />
+
 </com.android.launcher3.LauncherRootView>
