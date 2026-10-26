@@ -378,8 +378,9 @@ public abstract class ItemInfoWithIcon extends ItemInfo {
      * Returns true if the current BitmapInfo can support cropping to custom icon shapes.
      */
     public boolean supportsCustomShapes(@DrawableCreationFlags int creationFlags) {
+        boolean isIconPack = (bitmap.getFlags() & BitmapInfo.FLAG_ICON_PACK) != 0;
         return Flags.enableLauncherIconShapes()
-                && (creationFlags & FLAG_THEMED) != 0
+                && ((creationFlags & FLAG_THEMED) != 0 || isIconPack)
                 && bitmap.isFullBleed()
                 && bitmap.getDefaultIconShape() != IconShape.EMPTY;
     }

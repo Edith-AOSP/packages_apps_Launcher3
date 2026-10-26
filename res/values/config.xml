@@ -30,6 +30,10 @@
     <!-- String representing the fallback search package name.-->
     <string name="fallback_search_package_name" translatable="false">com.google.android.googlequicksearchbox</string>
 
+    <!-- Dynamic clock / calendar icon packages (GApps overrides the AOSP apps) -->
+    <string name="clock_component_name" translatable="false">com.google.android.deskclock/com.android.deskclock.DeskClock</string>
+    <string name="calendar_component_name" translatable="false">com.google.android.calendar/com.android.calendar.AllInOneActivity</string>
+
     <!-- AllApps & Launcher transitions -->
     <!-- The duration of the PagedView page snap animation -->
     <integer name="config_pageSnapAnimationDuration">750</integer>

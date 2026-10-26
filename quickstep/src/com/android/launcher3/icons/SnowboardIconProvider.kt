@@ -107,16 +107,30 @@ constructor(
         } else {
             null
         }
+        val hasOverride = componentName != null &&
+            overrideRepo.overridesMap.containsKey(ComponentKey(componentName, user))
+
+        // The live clock icon wins over static pack art: icon packs cannot provide a dynamic
+        // clock, and the launcher already has the layered clock drawable from the clock package.
+        if (isClockPackage(packageName) && !hasOverride) {
+            getClockDrawable(iconDpi)?.let { return it }
+        }
 
         if (iconEntry != null) {
             if (iconEntry.type == IconType.Calendar) {
                 iconEntry = iconEntry.resolveDynamicCalendar(getDay())
+            } else if (isCalendarPackage(packageName) && !hasOverride) {
+                // The pack has no day-specific entry, so today's date from the system calendar
+                // beats a static pack icon.
+                getCalendarDrawable(iconDpi)?.let { return it }
             }
 
             val iconPackIcon = iconPackProvider.getDrawable(iconEntry, iconDpi)
             if (iconPackIcon != null) {
                 return iconPackIcon
             }
+        } else if (isCalendarPackage(packageName) && !hasOverride) {
+            getCalendarDrawable(iconDpi)?.let { return it }
         }
 
         return super.getIcon(info, appInfo, iconDpi)

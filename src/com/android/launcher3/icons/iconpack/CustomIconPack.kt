@@ -23,10 +23,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.content.res.XmlResourceParser
+import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.Xml
 import com.android.launcher3.R
 import com.android.launcher3.icons.ExtendedBitmapDrawable
+import com.android.launcher3.icons.IconPackAdaptiveDrawable
+import com.android.launcher3.icons.IconPackShapelessDrawable
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -61,11 +65,17 @@ class CustomIconPack(context: Context, packPackageName: String) :
         val id = getDrawableId(iconEntry.name)
         if (id == 0) return null
         return try {
-            ExtendedBitmapDrawable.wrap(
-                packResources,
-                packResources.getDrawableForDensity(id, iconDpi, null),
-                true,
-            )
+            val drawable = packResources.getDrawableForDensity(id, iconDpi, null)
+            when {
+                drawable is AdaptiveIconDrawable -> IconPackAdaptiveDrawable(drawable)
+                drawable is BitmapDrawable -> ExtendedBitmapDrawable.wrap(
+                    packResources,
+                    drawable,
+                    true,
+                )
+                drawable != null -> IconPackShapelessDrawable(drawable)
+                else -> null
+            }
         } catch (_: Resources.NotFoundException) {
             null
         }

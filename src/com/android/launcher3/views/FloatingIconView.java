@@ -321,9 +321,9 @@ public class FloatingIconView extends FrameLayout implements
             int width = (int) pos.width();
             int height = (int) pos.height();
             IconLoader.Result fullIcon = null;
-            boolean isFromIconPack = info instanceof ItemInfoWithIcon iiwi
-                    && (iiwi.bitmap.getFlags() & BitmapInfo.FLAG_ICON_PACK) != 0;
-            if (supportsAdaptiveIcons && !isFromIconPack) {
+            boolean isPreShapedIconPack = info instanceof ItemInfoWithIcon iiwi
+                    && iiwi.bitmap.isPreShapedIconPack();
+            if (supportsAdaptiveIcons && !isPreShapedIconPack) {
                 boolean shouldThemeIcon = (btvIcon instanceof FastBitmapDrawable fbd)
                         && fbd.isCreatedForTheme();
                 fullIcon = l.getActivityComponent().getIconLoader().getFullDrawable(

@@ -278,7 +278,7 @@ public class DragView extends FrameLayout {
             int w = mWidth;
             int h = mHeight;
             var fullDrawable = info instanceof ItemInfoWithIcon iiwi
-                    && (iiwi.bitmap.getFlags() & BitmapInfo.FLAG_ICON_PACK) != 0
+                    && iiwi.bitmap.isPreShapedIconPack()
                     ? null
                     : mActivity.getActivityComponent().getIconLoader().getFullDrawable(
                     info, w, h, themeManager.isIconThemeEnabled());
